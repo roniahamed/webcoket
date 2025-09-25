@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Django WebSocket Echo Client</title>
+</head>
+<body>
+    <h1>Django WebSocket Echo Client</h1>
+    <input type="text" id="messageInput" placeholder="এখানে মেসেজ লিখুন...">
+    <button id="sendButton">পাঠান</button>
+    <div id="messages"></div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // Django সার্ভারের সাথে সংযোগ স্থাপন করা হচ্ছে
+        const echoSocket = new WebSocket('ws://' + window.location.host + '/ws/echo/');
+
+        echoSocket.onopen = function(e) {
+            console.log('WebSocket সংযোগ স্থাপিত হয়েছে।');
+        };
+
+        echoSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(`সার্ভার থেকে প্রাপ্ত বার্তা: ${data.message}`);
+            messagesDiv.innerHTML += `<p><strong>সার্ভার:</strong> ${data.message}</p>`;
+        };
+
+        echoSocket.onclose = function(e) {
+            console.error('WebSocket সংযোগ বন্ধ হয়েছে।');
+        };
+
+        sendButton.onclick = function(e) {
+            const message = messageInput.value;
+            if (message) {
+                echoSocket.send(JSON.stringify({
+                    'message': message
+                }));
+                messagesDiv.innerHTML += `<p><strong>আপনি:</strong> ${message}</p>`;
+                messageInput.value = '';
+            }
+        };
+    </script>
+</body>
+</html>
