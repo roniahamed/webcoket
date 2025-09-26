@@ -28,8 +28,9 @@
         // ধাপ ৩: সার্ভার থেকে বার্তা পেলে কী হবে তা নির্ধারণ করা
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
+            const message = data.username + ": " + data.message + '\n';
             // প্রাপ্ত বার্তাটি চ্যাট লগে যুক্ত করা
-            document.querySelector('#chat-log').value += (data.message + '\n');
+            document.querySelector('#chat-log').value += message;
         };
 
         // ধাপ ৪: সংযোগ বন্ধ হয়ে গেলে কী হবে
