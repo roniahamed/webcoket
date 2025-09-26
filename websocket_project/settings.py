@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'channels',
     'echo_app',
     'chat',
+
+    # REST FRAMEWORK 
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
