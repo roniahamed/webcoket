@@ -1,0 +1,59 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>চ্যাট রুম</title>
+</head>
+<body>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <input id="chat-message-input" type="text" size="100"><br>
+    <input id="chat-message-submit" type="button" value="পাঠান">
+
+    {{ room_name|json_script:"room-name" }}
+
+    <script>
+        // ধাপ ১: টেমপ্লেট থেকে রুমের নাম নেওয়া
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        // ধাপ ২: সঠিক URL দিয়ে WebSocket সংযোগ স্থাপন করা
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+
+        // ধাপ ৩: সার্ভার থেকে বার্তা পেলে কী হবে তা নির্ধারণ করা
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            // প্রাপ্ত বার্তাটি চ্যাট লগে যুক্ত করা
+            document.querySelector('#chat-log').value += (data.message + '\n');
+        };
+
+        // ধাপ ৪: সংযোগ বন্ধ হয়ে গেলে কী হবে
+        chatSocket.onclose = function(e) {
+            console.error('চ্যাট সকেট অপ্রত্যাশিতভাবে বন্ধ হয়ে গেছে');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {  // enter চাপলে বার্তা পাঠাবে
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        // ধাপ ৫: "পাঠান" বাটনে ক্লিক করলে কী হবে
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            // JSON ফরম্যাটে সার্ভারে বার্তা পাঠানো
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = ''; // ইনপুট বক্স খালি করা
+        };
+    </script>
+</body>
+</html>
